@@ -1,0 +1,16 @@
+machine:
+  environment:
+    REPO: ${GOPATH%%:*}/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+  post:
+    - rm -rf $REPO
+    - mkdir -p ${GOPATH%%:*}/src/github.com/${CIRCLE_PROJECT_USERNAME}
+    - cp -r ${HOME}/${CIRCLE_PROJECT_REPONAME} $REPO
+
+dependencies:
+  override:
+    - sudo service mysql start
+
+test:
+  override:
+    - cd $REPO && go build
+    - cd $REPO && go test -v
