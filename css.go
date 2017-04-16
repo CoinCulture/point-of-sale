@@ -1,15 +1,12 @@
 package main
 
 var defaultCSS = `<style>
-
 table{
 	border:solid;
 }
-
 `
 
 var insertNewItemsCSS = defaultCSS + `
-
 </style>`
 
 var selectTodaysMenuCSS = defaultCSS + `
@@ -22,7 +19,6 @@ var statsCSS = defaultCSS + `
 </style>`
 
 var reopenSessionCSS = defaultCSS + `
-
 #table{
 	padding-top:10px
 }
@@ -30,20 +26,15 @@ var reopenSessionCSS = defaultCSS + `
 .btn{
 	margin:7px
 }
-
-
-
 </style>`
 
 var adminPageCSS = defaultCSS + `
-
 button{
 	margin:15px;
 }
 </style>`
 
 var openSessionCSS = defaultCSS + `
-
 #openSession{
 	width: 23%;
 	height: 200px;
@@ -94,7 +85,6 @@ table{
 </style>`
 
 var newSessionCSS = defaultCSS + `
-
 #payment{
 	padding-top: 5px
 }
@@ -116,12 +106,9 @@ p{
 #checkboxes{
 	font-size:20px
 }
-
-
 </style>`
 
 var menuCSS = defaultCSS + `
-
 #active{
 	width:12px;
 	height:12px;
@@ -208,12 +195,9 @@ div input h4{
 	top:-70px;
 	display:none
 }
-
 </style>`
 
 var finalBillCSS = defaultCSS + `
-
-
 #brclt{
 	font-weight:bold;
 	font-size:20px
@@ -222,5 +206,4 @@ var finalBillCSS = defaultCSS + `
 button{
 	margin-top:20px;
 }
-
 </style>`
