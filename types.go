@@ -127,6 +127,12 @@ type Statistics struct {
 	Menu *BillOrMenu
 }
 
+type Report struct {
+	// Dates for the report we are generating
+	Beginning string
+	End       string
+}
+
 type Transaction struct {
 	BraceletID int
 	Name       string

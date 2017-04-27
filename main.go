@@ -169,7 +169,7 @@ func displayBill(w http.ResponseWriter, r *http.Request) {
 	renderAndWrite(w, "finalBill", finalBillTemplate, visit)
 }
 
-func statisticsPage(w http.ResponseWriter, r *http.Request) {
+func endOfDayStatistics(w http.ResponseWriter, r *http.Request) {
 
 	stats := new(Statistics)
 
@@ -200,7 +200,32 @@ func statisticsPage(w http.ResponseWriter, r *http.Request) {
 
 	stats.NumberOfVisits = totalVisits
 
-	renderAndWrite(w, "stats", statisticsPageTemplate, stats)
+	renderAndWrite(w, "endOfDayStats", endOfDayStatisticsTemplate, stats)
+}
+
+func statisticsOverview(w http.ResponseWriter, r *http.Request) {
+	// first render the UI
+	// then have another endpoint serve the selection
+	w.Write([]byte(statisticsOverviewTemplate))
+}
+
+func generateStatistics(w http.ResponseWriter, r *http.Request) {
+
+	report := new(Report)
+
+	// dates for which an overview is sought
+	// need to be entered 2017_05_24
+	// TODO proper calendars with javascript
+	report.Beginning = r.FormValue("beginning")
+	report.End = r.FormValue("end")
+
+	// validate the input
+
+	// loop through each day, pulling out what is required
+	// then do the required calculations
+	// and fill the struct with the info
+
+	renderAndWrite(w, "detailedStats", detailedStatisticsTemplate, report)
 }
 
 func reopenOrDeleteSessionPage(w http.ResponseWriter, r *http.Request) {
@@ -696,12 +721,14 @@ func main() {
 	http.HandleFunc("/closeDay", closeDay)
 	http.HandleFunc("/selectTodaysMenu", selectTodaysMenu)
 	http.HandleFunc("/insertNewItems", insertNewItems)
+	http.HandleFunc("/generateStatistics", generateStatistics)
 
 	// admin options
 	http.HandleFunc("/selectTodaysMenuPage", selectTodaysMenuPage)
-	http.HandleFunc("/statisticsPage", statisticsPage)
+	http.HandleFunc("/endOfDayStatistics", endOfDayStatistics)
 	http.HandleFunc("/reopenOrDeleteSessionPage", reopenOrDeleteSessionPage)
 	http.HandleFunc("/insertNewItemsPage", insertNewItemsPage)
+	http.HandleFunc("/statisticsOverview", statisticsOverview)
 
 	// for js
 	http.HandleFunc("/isLockerActive", isLockerActive)

@@ -6,12 +6,6 @@ table{
 }
 `
 
-var insertNewItemsCSS = defaultCSS + `
-</style>`
-
-var selectTodaysMenuCSS = defaultCSS + `
-</style>`
-
 var statsCSS = defaultCSS + `
 .container{
 	margin-bottom:25px

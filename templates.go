@@ -251,22 +251,27 @@ var adminPageTemplate = defaultHTML + adminPageCSS + `
 	<form method="POST" action="/selectTodaysMenuPage">
 	<button type="submit" class="btn btn-default btn-block btn-lg">Select Today's Menu</button>
 	</form>
-	
+
 	<form method="POST" action="/reopenOrDeleteSessionPage">
 	<button type="submit" class="btn btn-default btn-block btn-lg">Re-open or Delete a Session</button>
 	</form>
-	
-	<form method="POST" action="/statisticsPage">
-	<button type="submit" class="btn btn-default btn-block btn-lg">Statistics and Close Day</button>
+
+	<form method="POST" action="/endOfDayStatistics">
+	<button type="submit" class="btn btn-default btn-block btn-lg">Close Day</button>
 	</form>	
+
 	<form method="POST" action="/insertNewItemsPage">
-	<button type="submit" class="btn btn-default btn-block btn-lg">Create New Items</button>
+	<button type="submit" class="btn btn-default btn-block btn-lg">Manage Items</button>
+	</form>
+
+	<form method="POST" action="/statisticsOverview">
+	<button type="submit" class="btn btn-default btn-block btn-lg">Statistics Overview</button>
 	</form>
 </div>	
 </body>
 </html>`
 
-var statisticsPageTemplate = defaultHTML + statsCSS + `
+var endOfDayStatisticsTemplate = defaultHTML + statsCSS + `
 	
 <div class="container">
 	<h2>End Of Day Overview</h2>
@@ -355,7 +360,8 @@ var statisticsPageTemplate = defaultHTML + statsCSS + `
 
 </html>`
 
-var selectTodaysMenuPageTemplate = defaultHTML + selectTodaysMenuCSS + `
+var selectTodaysMenuPageTemplate = defaultHTML + defaultCSS + `
+</style>
 <div class="container">
 	<h1>Set foods for the day</h1>
 
@@ -370,7 +376,8 @@ var selectTodaysMenuPageTemplate = defaultHTML + selectTodaysMenuCSS + `
 </body>
 </html>`
 
-var insertNewItemsTemplate = defaultHTML + insertNewItemsCSS + `
+var insertNewItemsTemplate = defaultHTML + defaultCSS + `
+</style>
 <div class="container">
 	<h1>Add New Items to Menus</h1>
 	<form method="POST" action="/insertNewItems">
@@ -396,8 +403,42 @@ var insertNewItemsTemplate = defaultHTML + insertNewItemsCSS + `
 	</form>
 </div>
 </body>
-</html>
-`
+</html>`
+
+var statisticsOverviewTemplate = defaultHTML + defaultCSS + `
+</style>
+<div class="container">
+	<h1>Get Statistics</h1>
+	<form method="POST" action="/generateStatistics">
+		<div class="form-group">
+			<label for="beginning">Beginning Date:</label>
+			<input type="text" class="form-control" name="beginning">
+			<p>Use format 2017_06_23</p>
+		</div>
+	
+		<div class="form-group">
+			<label for="end">End Date:</label>
+			<input type="text" class="form-control" name="end">
+			<p>Use format 2017_07_23</p>
+		</div>
+
+		<button type="submit" class="btn btn-default">Get The Statistics</button>
+
+	</form>
+</div>
+</body>
+</html>`
+
+var detailedStatisticsTemplate = defaultHTML + defaultCSS + `
+</style>
+
+<h1>Report for MyBusiness</h1>
+<p>From: {{ .Beginning}}</p>
+<p>To: {{ .End}}</p>
+
+</div>
+</body>
+</html>`
 
 var reopenOrDeleteSessionPageTemplate = defaultHTML + reopenSessionCSS + `
 
