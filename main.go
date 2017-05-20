@@ -655,13 +655,17 @@ func insertNewItems(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	password := flag.String("password", "", "password for mysql db")
+	env := flag.String("env", "development", "Environment [development|staging|production]")
 	flag.Parse()
 
+	config := LoadConfig(env)
+
 	cfg := mysql.Config{
-		User:   "root",
-		DBName: "myBusiness",
-		Passwd: *password,
+		User:   config.db.user,
+		DBName: config.db.databaseName,
+		Passwd: config.db.password,
+		Net:    config.db.net,
+		Addr:   config.db.getAddr(),
 		Params: map[string]string{
 			"parseTime": "true",
 			"loc":       "EST",
@@ -706,8 +710,9 @@ func main() {
 	// for js
 	http.HandleFunc("/isLockerActive", isLockerActive)
 
-	fmt.Println("POS app started, listening on port 8081")
-	err = http.ListenAndServe(":8081", nil)
+	httpPortStr := strconv.Itoa(config.http.port)
+	fmt.Printf("POS app started, listening on port %v\n", httpPortStr)
+	err = http.ListenAndServe(":"+httpPortStr, nil)
 	if err != nil {
 		panic(err.Error())
 	}
