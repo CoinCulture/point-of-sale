@@ -510,63 +510,49 @@ func closeBill(w http.ResponseWriter, r *http.Request) {
 }
 
 func closeDay(w http.ResponseWriter, r *http.Request) {
-	panic("unable to close day - need to fix the queries")
-	/*
-		if len(getActiveVisits(true)) != 0 {
-			writeError(w, "cannot close day with sessions still open", nil)
-			return
-		}
+	if len(getActiveVisits(true)) != 0 {
+		writeError(w, "cannot close day with sessions still open", nil)
+		return
+	}
 
-		// ugly hack to get date from first visit, otherwise getFormattedDate()
-		// will use the following day, if a day is closed after midnight
-		// TODO struct Day
-		var date string
-		// nested because deleting a session can remove an entry with its invoice id
-		if err := db.QueryRow("SELECT date FROM visits WHERE invoice_id=5").Scan(&date); err != nil {
-			if err := db.QueryRow("SELECT date FROM visits WHERE invoice_id=10").Scan(&date); err != nil {
-				if err := db.QueryRow("SELECT date FROM visits WHERE invoice_id=15").Scan(&date); err != nil {
-					panic(err)
-				}
-			}
-		}
+	// ugly hack to get date from first visit, otherwise getFormattedDate()
+	// will use the following day, if a day is closed after midnight
+	// TODO struct Day
+	var visit Visit
+	if err := db.First(&visit).Error; err != nil {
+		panic(err)
+	}
 
-		sqlDateFormat := strings.Replace(date, "-", "_", 2)
-		sqlDateFormat = strings.Split(sqlDateFormat, "T")[0] // awful
+	sqlDateFormat := strings.Replace(visit.Date, "-", "_", 2)
+	sqlDateFormat = strings.Split(sqlDateFormat, "T")[0] // awful
 
-		createQueryVisit := fmt.Sprintf("CREATE TABLE visits_%s LIKE visits", sqlDateFormat)
-		insertQueryVisit := fmt.Sprintf("INSERT visits_%s SELECT * FROM visits", sqlDateFormat)
+	createQueryVisit := fmt.Sprintf("CREATE TABLE visits_%s LIKE visits", sqlDateFormat)
+	insertQueryVisit := fmt.Sprintf("INSERT visits_%s SELECT * FROM visits", sqlDateFormat)
 
-		createQueryTransactions := fmt.Sprintf("CREATE TABLE transactions_%s LIKE transactions", sqlDateFormat)
-		insertQueryTransactions := fmt.Sprintf("INSERT transactions_%s SELECT * FROM transactions", sqlDateFormat)
+	createQueryTransactions := fmt.Sprintf("CREATE TABLE transactions_%s LIKE transactions", sqlDateFormat)
+	insertQueryTransactions := fmt.Sprintf("INSERT transactions_%s SELECT * FROM transactions", sqlDateFormat)
 
-		_, err = db.Query(createQueryVisit)
-		if err != nil {
-			panic(err)
-		}
-		_, err = db.Query(insertQueryVisit)
-		if err != nil {
-			panic(err)
-		}
-		_, err = db.Query("TRUNCATE visits")
-		if err != nil {
-			panic(err)
-		}
+	if err := db.Exec(createQueryVisit).Error; err != nil {
+		panic(err)
+	}
+	if err := db.Exec(insertQueryVisit).Error; err != nil {
+		panic(err)
+	}
+	if err := db.Exec("TRUNCATE visits").Error; err != nil {
+		panic(err)
+	}
 
-		_, err = db.Query(createQueryTransactions)
-		if err != nil {
-			panic(err)
-		}
-		_, err = db.Query(insertQueryTransactions)
-		if err != nil {
-			panic(err)
-		}
-		_, err = db.Query("TRUNCATE transactions")
-		if err != nil {
-			panic(err)
-		}
+	if err := db.Exec(createQueryTransactions).Error; err != nil {
+		panic(err)
+	}
+	if err := db.Exec(insertQueryTransactions).Error; err != nil {
+		panic(err)
+	}
+	if err := db.Exec("TRUNCATE transactions").Error; err != nil {
+		panic(err)
+	}
 
-		http.Redirect(w, r, "/", 301)
-	*/
+	http.Redirect(w, r, "/", 301)
 }
 
 // flip the bracelet_id from active = 0 to 1
