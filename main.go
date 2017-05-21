@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"errors"
 	"flag"
 	"fmt"
@@ -10,9 +9,10 @@ import (
 	"strings"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
 )
 
-var db *sql.DB
+var db *gorm.DB
 var err error
 var activeSession bool
 
@@ -78,23 +78,11 @@ func newSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func getLastOpenedVisitInfo(number int) []*Visit {
-
-	query := fmt.Sprintf("SELECT bracelet_id, invoice_id FROM visits ORDER BY invoice_id DESC LIMIT %v", number)
-	rows, err := db.Query(query)
-	if err != nil {
-		panic(err)
-	}
-
 	var lastOpenedVisits []*Visit
 
-	for rows.Next() {
-		last := new(Visit)
-		err = rows.Scan(&last.BraceletID, &last.InvoiceID)
-		if err != nil {
-			panic(err)
-		}
-		last.Total = getVisitTotal(last, 1) // won't show pay_at_end, that's fine
-		lastOpenedVisits = append(lastOpenedVisits, last)
+	db.Order("invoice_id desc").Limit(number).Find(&lastOpenedVisits)
+	for _, visit := range lastOpenedVisits {
+		visit.Total = getVisitTotal(visit, 1) // won't show pay_at_end, that's fine
 	}
 
 	return lastOpenedVisits
@@ -270,13 +258,14 @@ func initializeSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// initialize a visit, generates an invoiceID
-	_, err = db.Exec("INSERT INTO visits(date, bracelet_id, entry_time, active) values (?, ?, ?, ?)", visit.Date, visit.BraceletID, CurrentTime(), "1")
-	if err != nil {
-		writeError(w, ErrWithSQLquery, err)
-		return
-	}
+	visit.EntryTime = CurrentTime()
+	visit.Active = 1
 
+	db.NewRecord(visit)
+	db.Create(&visit)
+
+	// initialize a visit, generates an invoiceID
+	fmt.Println(visit)
 	visit, err = getVisitFromBraceletID(braceletID)
 	if err != nil {
 		writeError(w, ErrSessionDoesNotExist, nil)
@@ -319,11 +308,37 @@ func initializeSession(w http.ResponseWriter, r *http.Request) {
 
 	// easier to hard code than to deduplication for now
 	if punch {
-		_, err = db.Exec("INSERT INTO transactions(invoice_id, bracelet_id, name, amount, price, total, time_ordered, notes, type, paid) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", visit.InvoiceID, visit.BraceletID, "punch a pass", 1, 0, 0, CurrentTime(), entryThing, "misc", paid)
+		transaction := Transaction{
+			InvoiceID:   visit.InvoiceID,
+			BraceletID:  visit.BraceletID,
+			Name:        "punch a pass",
+			Amount:      1,
+			Price:       0,
+			Total:       0,
+			TimeOrdered: CurrentTime(),
+			Notes:       entryThing,
+			Type:        "misc",
+			Paid:        paid,
+		}
+		db.NewRecord(transaction)
+		db.Create(&transaction)
 	}
 
 	if adult {
-		_, err = db.Exec("INSERT INTO transactions(invoice_id, bracelet_id, name, amount, price, total, time_ordered, notes, type, paid) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", visit.InvoiceID, visit.BraceletID, "adult admission", 1, 5, 5, CurrentTime(), entryThing, "misc", paid)
+		transaction := Transaction{
+			InvoiceID:   visit.InvoiceID,
+			BraceletID:  visit.BraceletID,
+			Name:        "adult admission",
+			Amount:      1,
+			Price:       5,
+			Total:       5,
+			TimeOrdered: CurrentTime(),
+			Notes:       entryThing,
+			Type:        "misc",
+			Paid:        paid,
+		}
+		db.NewRecord(transaction)
+		db.Create(&transaction)
 	}
 
 	// add additional items if bought (including kids, a pass, or extra people)
@@ -354,7 +369,20 @@ func initializeSession(w http.ResponseWriter, r *http.Request) {
 			}
 
 			total := (num0 * activeItems.Price)
-			_, err = db.Exec("INSERT INTO transactions(invoice_id, bracelet_id, name, amount, price, total, time_ordered, notes, type, paid) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", visit.InvoiceID, visit.BraceletID, activeItems.Name, numberOrdered, activeItems.Price, total, CurrentTime(), entryThing, "misc", paid)
+			transaction := Transaction{
+				InvoiceID:   visit.InvoiceID,
+				BraceletID:  visit.BraceletID,
+				Name:        activeItems.Name,
+				Amount:      num0,
+				Price:       activeItems.Price,
+				Total:       total,
+				TimeOrdered: CurrentTime(),
+				Notes:       entryThing,
+				Type:        "misc",
+				Paid:        paid,
+			}
+			db.NewRecord(transaction)
+			db.Create(&transaction)
 			if err != nil {
 				writeError(w, ErrWithSQLquery, err)
 				return
@@ -410,7 +438,20 @@ func addItemsToASession(w http.ResponseWriter, r *http.Request) {
 				}
 
 				total := (num0 * activeItems.Price)
-				_, err = db.Exec("INSERT INTO transactions(invoice_id, bracelet_id, name, amount, price, total, time_ordered, notes, type, paid) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", visit.InvoiceID, visit.BraceletID, activeItems.Name, numberOrdered, activeItems.Price, total, CurrentTime(), notes, category, 0) // <= category is clutch here
+				transaction := Transaction{
+					InvoiceID:   visit.InvoiceID,
+					BraceletID:  visit.BraceletID,
+					Name:        activeItems.Name,
+					Amount:      num0,
+					Price:       activeItems.Price,
+					Total:       total,
+					TimeOrdered: CurrentTime(),
+					Notes:       notes,
+					Type:        category,
+					Paid:        0,
+				}
+				db.NewRecord(transaction)
+				db.Create(&transaction)
 				if err != nil {
 					writeError(w, ErrWithSQLquery, err)
 					return
@@ -450,18 +491,17 @@ func closeBill(w http.ResponseWriter, r *http.Request) {
 	}
 	visit.BraceletID, visit.InvoiceID, visit.Total = ints[0], ints[1], ints[2] // TODO fix total. see below
 
-	visit.ExitTime = CurrentTime()
+	var t = CurrentTime()
+	visit.ExitTime = &t
 
-	_, err = db.Exec("UPDATE visits SET exit_time=?,active=0 WHERE bracelet_id=? AND invoice_id=?", visit.ExitTime, visit.BraceletID, visit.InvoiceID)
 	// total is calculated from bill displayed & doesn't include items bought up front, which it should
 	//_, err = db.Exec("UPDATE visits SET exit_time=?,total=?,active=0 WHERE bracelet_id=? AND invoice_id=?", visit.ExitTime, visit.Total, visit.BraceletID, visit.InvoiceID)
-	if err != nil {
+	if err := db.Exec("UPDATE visits SET exit_time = ?, active = ? WHERE bracelet_id = ? AND invoice_id = ?", visit.ExitTime, 0, visit.BraceletID, visit.InvoiceID).Error; err != nil {
 		writeError(w, ErrWithSQLquery, err)
 		return
 	}
 
-	_, err = db.Exec("UPDATE transactions SET paid=1 WHERE bracelet_id=? AND invoice_id=?", visit.BraceletID, visit.InvoiceID)
-	if err != nil {
+	if err := db.Exec("UPDATE transactions SET paid = ? WHERE bracelet_id = ? AND invoice_id = ?", 1, visit.BraceletID, visit.InvoiceID).Error; err != nil {
 		writeError(w, ErrWithSQLquery, err)
 		return
 	}
@@ -470,7 +510,6 @@ func closeBill(w http.ResponseWriter, r *http.Request) {
 }
 
 func closeDay(w http.ResponseWriter, r *http.Request) {
-
 	if len(getActiveVisits(true)) != 0 {
 		writeError(w, "cannot close day with sessions still open", nil)
 		return
@@ -479,17 +518,12 @@ func closeDay(w http.ResponseWriter, r *http.Request) {
 	// ugly hack to get date from first visit, otherwise getFormattedDate()
 	// will use the following day, if a day is closed after midnight
 	// TODO struct Day
-	var date string
-	// nested because deleting a session can remove an entry with its invoice id
-	if err := db.QueryRow("SELECT date FROM visits WHERE invoice_id=5").Scan(&date); err != nil {
-		if err := db.QueryRow("SELECT date FROM visits WHERE invoice_id=10").Scan(&date); err != nil {
-			if err := db.QueryRow("SELECT date FROM visits WHERE invoice_id=15").Scan(&date); err != nil {
-				panic(err)
-			}
-		}
+	var visit Visit
+	if err := db.First(&visit).Error; err != nil {
+		panic(err)
 	}
 
-	sqlDateFormat := strings.Replace(date, "-", "_", 2)
+	sqlDateFormat := strings.Replace(visit.Date, "-", "_", 2)
 	sqlDateFormat = strings.Split(sqlDateFormat, "T")[0] // awful
 
 	createQueryVisit := fmt.Sprintf("CREATE TABLE visits_%s LIKE visits", sqlDateFormat)
@@ -498,34 +532,27 @@ func closeDay(w http.ResponseWriter, r *http.Request) {
 	createQueryTransactions := fmt.Sprintf("CREATE TABLE transactions_%s LIKE transactions", sqlDateFormat)
 	insertQueryTransactions := fmt.Sprintf("INSERT transactions_%s SELECT * FROM transactions", sqlDateFormat)
 
-	_, err = db.Query(createQueryVisit)
-	if err != nil {
+	if err := db.Exec(createQueryVisit).Error; err != nil {
 		panic(err)
 	}
-	_, err = db.Query(insertQueryVisit)
-	if err != nil {
+	if err := db.Exec(insertQueryVisit).Error; err != nil {
 		panic(err)
 	}
-	_, err = db.Query("TRUNCATE visits")
-	if err != nil {
+	if err := db.Exec("TRUNCATE visits").Error; err != nil {
 		panic(err)
 	}
 
-	_, err = db.Query(createQueryTransactions)
-	if err != nil {
+	if err := db.Exec(createQueryTransactions).Error; err != nil {
 		panic(err)
 	}
-	_, err = db.Query(insertQueryTransactions)
-	if err != nil {
+	if err := db.Exec(insertQueryTransactions).Error; err != nil {
 		panic(err)
 	}
-	_, err = db.Query("TRUNCATE transactions")
-	if err != nil {
+	if err := db.Exec("TRUNCATE transactions").Error; err != nil {
 		panic(err)
 	}
 
 	http.Redirect(w, r, "/", 301)
-
 }
 
 // flip the bracelet_id from active = 0 to 1
@@ -543,24 +570,22 @@ func reopenSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Exec("UPDATE visits SET exit_time=NULL,total=NULL,active=1 WHERE bracelet_id=? ORDER BY invoice_id DESC LIMIT 1", braceletID)
-	if err != nil {
-		if err != nil {
-			panic(err)
-		}
+	if err := db.Exec("UPDATE visits SET exit_time = NULL, total = NULL, active = ? WHERE bracelet_id = ? ORDER BY invoice_id DESC LIMIT 1", 1, braceletID).Error; err != nil {
+		writeError(w, ErrWithSQLquery, err)
+		return
 	}
 
 	// to re-open items that were marked as paid
 	visit, err := getVisitFromBraceletID(braceletID)
 	if err != nil {
 		writeError(w, ErrSessionDoesNotExist, nil)
+		fmt.Println("Using visit variable %s", visit)
 		return
 	}
 
 	// set paid=0, notes<>'entry' is != and sort of hacky but needed for this feature
 	// TODO get rid of this hack !
-	_, err = db.Exec("UPDATE transactions SET paid=0 WHERE notes<>'entry' AND bracelet_id=? AND invoice_id=?", visit.BraceletID, visit.InvoiceID)
-	if err != nil {
+	if err := db.Exec("UPDATE transactions SET paid = ? WHERE notes<>'entry' AND bracelet_id = ? AND invoice_id = ?", 0, visit.BraceletID, visit.InvoiceID).Error; err != nil {
 		writeError(w, ErrWithSQLquery, err)
 		return
 	}
@@ -583,20 +608,17 @@ func deleteSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var invoiceID int
-	if err := db.QueryRow("SELECT invoice_id FROM visits WHERE bracelet_id=? AND active=0 ORDER BY invoice_id DESC LIMIT 1", braceletID).Scan(&invoiceID); err != nil {
+	var visit Visit
+	if err := db.Where("bracelet_id = ? AND active = ?", braceletID, 0).Last(&visit).Error; err != nil {
 		writeError(w, ErrWithSQLquery, err)
 		return
 	}
 
-	_, err = db.Exec("DELETE from transactions WHERE bracelet_id=? AND invoice_id=?", braceletID, invoiceID)
-	if err != nil {
+	if err := db.Where("bracelet_id = ? AND invoice_id = ?", braceletID, visit.InvoiceID).Delete(Transaction{}).Error; err != nil {
 		writeError(w, ErrWithSQLquery, err)
 		return
 	}
-
-	_, err = db.Exec("DELETE from visits WHERE bracelet_id=? AND invoice_id=?", braceletID, invoiceID)
-	if err != nil {
+	if err := db.Where("bracelet_id = ? AND invoice_id = ?", braceletID, visit.InvoiceID).Delete(Visit{}).Error; err != nil {
 		writeError(w, ErrWithSQLquery, err)
 		return
 	}
@@ -605,8 +627,7 @@ func deleteSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func selectTodaysMenu(w http.ResponseWriter, r *http.Request) {
-	_, err := db.Exec("UPDATE items SET active=0 WHERE item_type='food'")
-	if err != nil {
+	if err := db.Exec("UPDATE items SET active = ? WHERE item_type = ?", 0, "food").Error; err != nil {
 		writeError(w, ErrWithSQLquery, err)
 		return
 	}
@@ -614,9 +635,7 @@ func selectTodaysMenu(w http.ResponseWriter, r *http.Request) {
 	allFoods := getActiveItems("allfood") // not really all "active" ones but w/e we can rename function or something
 	for _, foodItem := range allFoods {
 		if r.FormValue(foodItem.Name) == "on" {
-
-			_, err := db.Exec("UPDATE items SET active = 1 WHERE name=? AND item_type='food'", foodItem.Name)
-			if err != nil {
+			if err := db.Exec("UPDATE items SET active = ? WHERE item_type = ? AND name = ? ", 1, "food", foodItem.Name).Error; err != nil {
 				writeError(w, ErrWithSQLquery, err)
 				return
 			}
@@ -627,28 +646,26 @@ func selectTodaysMenu(w http.ResponseWriter, r *http.Request) {
 
 // for adding new items on the fly, has some UX bugs
 func insertNewItems(w http.ResponseWriter, r *http.Request) {
-	item := new(Item)
-	item.Name = r.FormValue("name")
-	item.Type = r.FormValue("type")
+	item := Item{
+		Name:   r.FormValue("name"),
+		Type:   r.FormValue("type"),
+		Notes:  "todo",
+		Active: 1,
+	}
 	item.Price, err = strconv.Atoi(r.FormValue("price"))
 	if err != nil {
 		writeError(w, err.Error(), err)
 		return
 	}
-	var query string
-	queryString := "INSERT into items (name,price,notes,item_type,active) VALUES ('%s', %v, '%s', '%s', 1)"
 	switch item.Type {
 	case "food", "drink", "misc":
-		query = fmt.Sprintf(queryString, item.Name, item.Price, "todo", item.Type)
+		db.NewRecord(item)
+		db.Create(&item)
 	default:
 		writeError(w, "type of item entered not available; select from: food,drink,misc", nil)
 		return
 	}
-	_, err = db.Exec(query)
-	if err != nil {
-		writeError(w, ErrWithSQLquery, err)
-		return
-	}
+
 	// to show that the new item was added
 	// note: is set to active=1 by default
 	http.Redirect(w, r, "/addItems", 301)
@@ -665,19 +682,17 @@ func main() {
 		Params: map[string]string{
 			"parseTime": "true",
 			"loc":       "EST",
+			"charset":   "utf8",
 		},
 	}
 
-	db, err = sql.Open("mysql", cfg.FormatDSN())
-	if err != nil {
-		panic(err.Error())
-	}
-	defer db.Close()
+	db, err = gorm.Open("mysql", cfg.FormatDSN())
 
-	err = db.Ping()
 	if err != nil {
 		panic(err.Error())
 	}
+
+	defer db.Close()
 
 	// file serving endpoints
 	http.HandleFunc("/", homePage)

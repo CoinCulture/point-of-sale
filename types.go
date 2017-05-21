@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 //--------------------------------------------------
@@ -67,20 +69,19 @@ var ItemTypes = ItemType{
 }
 
 type Visit struct {
-	Date         string
-	EntryTime    string
-	ExitTimeHack string // TODO time.Time
-	ExitTime     time.Time
-
+	Date       string
 	BraceletID int
-	InvoiceID  int
-
-	Total int
+	EntryTime  time.Time
+	ExitTime   *time.Time
+	Total      int
+	Active     int
+	InvoiceID  int `gorm:"primary_key"`
 
 	FinalBill BillOrMenu
 
-	AdmissionType string // should be EntryTypes from above
-	Kids          int
+	ExitTimeHack  string `gorm:"-"` // Ignore this field // TODO time.Time
+	AdmissionType string `gorm:"-"` // Ignore this field // should be EntryTypes from above
+	Kids          int    `gorm:"-"` // Ignore this field
 }
 
 type BillOrMenu struct {
@@ -100,10 +101,14 @@ type Item struct {
 	// to set checkboxes for the menu
 	IsActive string
 
+	Active int
+
 	// used for stats & inserting
 	Type   string // TODO work in with ItemType struct
 	Amount int
 	Total  int
+
+	Notes string
 }
 
 type Statistics struct {
@@ -128,10 +133,15 @@ type Statistics struct {
 }
 
 type Transaction struct {
-	BraceletID int
-	Name       string
-	Amount     int
-	Price      int
-	Total      int
-	Type       string
+	ID          int `gorm:"primary_key"`
+	InvoiceID   int
+	BraceletID  int
+	Name        string
+	Amount      int
+	Price       int
+	Total       int
+	Type        string
+	Notes       string
+	Paid        int
+	TimeOrdered time.Time
 }
