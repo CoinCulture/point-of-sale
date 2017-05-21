@@ -641,7 +641,7 @@ func deleteSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func selectTodaysMenu(w http.ResponseWriter, r *http.Request) {
-	if err := db.Table("items").Where("item_type = ?", "food").Updates(Item{Active: 0}).Error; err != nil {
+	if err := db.Exec("UPDATE items SET active = ? WHERE item_type = ?", 0, "food").Error; err != nil {
 		writeError(w, ErrWithSQLquery, err)
 		return
 	}
@@ -649,7 +649,7 @@ func selectTodaysMenu(w http.ResponseWriter, r *http.Request) {
 	allFoods := getActiveItems("allfood") // not really all "active" ones but w/e we can rename function or something
 	for _, foodItem := range allFoods {
 		if r.FormValue(foodItem.Name) == "on" {
-			if err := db.Table("items").Where("item_type = ? AND name = ?", "food", foodItem.Name).Updates(Item{Active: 1}).Error; err != nil {
+			if err := db.Exec("UPDATE items SET active = ? WHERE item_type = ? AND name = ? ", 1, "food", foodItem.Name).Error; err != nil {
 				writeError(w, ErrWithSQLquery, err)
 				return
 			}
