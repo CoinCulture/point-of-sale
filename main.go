@@ -599,7 +599,7 @@ func reopenSession(w http.ResponseWriter, r *http.Request) {
 
 	// set paid=0, notes<>'entry' is != and sort of hacky but needed for this feature
 	// TODO get rid of this hack !
-	if err := db.Exec("UPDATE transactions SET paid = ? WHERE notes<>'entry' AND bracelet_id = ? AND invoice_id = ?", 0, 1, braceletID).Error; err != nil {
+	if err := db.Exec("UPDATE transactions SET paid = ? WHERE notes<>'entry' AND bracelet_id = ? AND invoice_id = ?", 0, visit.BraceletID, visit.InvoiceID).Error; err != nil {
 		writeError(w, ErrWithSQLquery, err)
 		return
 	}
