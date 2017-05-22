@@ -19,8 +19,12 @@ Additionally, it combines a chit printer and a food notification buzzer when cou
 Note: the hardware will need to be connected together and configured. See the [complete setup details](INSTALL.md) for more information.
 
 ## Install
+You'll need glide to install the dependencies:
+- `go get github.com/Masterminds/glide`
 #### Get the code
 - `go get github.com/zramsay/point-of-sale`
+#### Install the dependencies
+- `glide install`
 #### Create the database
 - `mysql -u root -p -e "CREATE DATABASE myBusiness"`
 #### Load it
