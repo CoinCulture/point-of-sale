@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/spf13/viper"
@@ -39,10 +38,14 @@ func LoadConfig() *Config {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		fmt.Println("Config file (./config.toml) not found - abort")
-		os.Exit(1)
+		fmt.Println("[NOTICE] Config file (./config.toml) not found - assuming defaults for all params")
 	}
 
+	viper.SetDefault("database.net", "tcp")
+	viper.SetDefault("database.host", "127.0.0.1")
+	viper.SetDefault("database.port", 3306)
+	viper.SetDefault("database.name", "myBusiness")
+	viper.SetDefault("database.user", "root")
 	viper.SetDefault("http.port", 8080)
 
 	return &Config{
