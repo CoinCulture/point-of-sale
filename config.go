@@ -23,40 +23,38 @@ type DbConfig struct {
 	port         int
 	databaseName string
 	user         string
-	password     string
 }
 
 func (c DbConfig) getAddr() string {
 	if c.net == "tcp" {
-		return c.host + ":" + strconv.Itoa(c.port)
+		return fmt.Sprintf("%s:%s", c.host, strconv.Itoa(c.port))
 	}
 	return ""
 }
 
-func LoadConfig(env *string) *Config {
+func LoadConfig() *Config {
 	//load the config file
-	viper.SetConfigName("app")
-	viper.AddConfigPath("config")
+	viper.SetConfigName("config")
+	viper.AddConfigPath("./")
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		fmt.Println("Config file (./config/app.[json|yaml|toml]) not found - abort")
+		fmt.Println("Config file (./config.toml) not found - abort")
 		os.Exit(1)
 	}
 
-	viper.SetDefault("env."+*env+".http.port", 8080)
+	viper.SetDefault("http.port", 8080)
 
 	return &Config{
 		db: &DbConfig{
-			net:          viper.GetString("env." + *env + ".db.net"),
-			host:         viper.GetString("env." + *env + ".db.host"),
-			port:         viper.GetInt("env." + *env + ".db.port"),
-			databaseName: viper.GetString("env." + *env + ".db.name"),
-			user:         viper.GetString("env." + *env + ".db.user"),
-			password:     viper.GetString("env." + *env + ".db.pass"),
+			net:          viper.GetString("database.net"),
+			host:         viper.GetString("database.host"),
+			port:         viper.GetInt("database.port"),
+			databaseName: viper.GetString("database.name"),
+			user:         viper.GetString("database.user"),
 		},
 		http: &HttpConfig{
-			port: viper.GetInt("env." + *env + ".http.port"),
+			port: viper.GetInt("http.port"),
 		},
 	}
 }

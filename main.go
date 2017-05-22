@@ -655,15 +655,19 @@ func insertNewItems(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	env := flag.String("env", "development", "Environment [development|staging|production]")
+	password := flag.String("password", "", "password for mysql db")
 	flag.Parse()
 
-	config := LoadConfig(env)
+	if *password == "" {
+		fmt.Println("[NOTICE] No password provided")
+	}
+
+	config := LoadConfig()
 
 	cfg := mysql.Config{
 		User:   config.db.user,
 		DBName: config.db.databaseName,
-		Passwd: config.db.password,
+		Passwd: *password,
 		Net:    config.db.net,
 		Addr:   config.db.getAddr(),
 		Params: map[string]string{
@@ -710,9 +714,8 @@ func main() {
 	// for js
 	http.HandleFunc("/isLockerActive", isLockerActive)
 
-	httpPortStr := strconv.Itoa(config.http.port)
-	fmt.Printf("POS app started, listening on port %v\n", httpPortStr)
-	err = http.ListenAndServe(":"+httpPortStr, nil)
+	fmt.Printf("POS app started, listening on port %v\n", config.http.port)
+	err = http.ListenAndServe(fmt.Sprintf(":%v", config.http.port), nil)
 	if err != nil {
 		panic(err.Error())
 	}
