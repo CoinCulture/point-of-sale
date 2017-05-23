@@ -37,4 +37,8 @@ This is all fun and well, however, we have not integrated our hardware. Most of 
 - that's basically it. A one line command with a couple flag options and a file of text. Issues #3, #6, and #17 all deal with improvements involving the printer.
 
 ## Buzzer
-- a great sensor kit for the Raspberry Pi 2 is the [Sunfounder Sensor Kit](https://www.sunfounder.com/starterkit/arduino/sensor-kit-v2-0.html). At $100, it's a great value for the amount of sensors you get. The manual is clear and consice, and the code is [available on GitHub](https://github.com/sunfounder/SunFounder_SensorKit_for_RPi2).
+- an awesome sensor kit for the Raspberry Pi 2 is the [Sunfounder Sensor Kit](https://www.sunfounder.com/starterkit/arduino/sensor-kit-v2-0.html). At $100 on Amazon, it's a great value for the amount of sensors you get. The manual is clear and consice, and the code is [available on GitHub](https://github.com/sunfounder/SunFounder_SensorKit_for_RPi2). The "Active Buzzer" is the simplest and it is lesson 10 on page 55. We're using a modification of [the original code](https://github.com/sunfounder/SunFounder_SensorKit_for_RPi2/blob/master/Python/10_active_buzzer.py) that's essentially slimmed down for simplification.
+- once you've connected the buzzer to the RPi and tested (with the original python script, for example) it, you're ready to go.
+- you might be asking yourself, what is this buzzer for? Well, it turns out that the cook sometimes likes to snooze in the back room. Since he's not in the kitchen where the food orders are printing, an easy way to notify him was necessary.
+
+That's basically it, re-run the app now that your hardware is hooked up and start placing orders!
