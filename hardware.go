@@ -8,9 +8,9 @@ import (
 	"strings"
 )
 
-// alert can be a buzzer or a light, or something else ...
-func activateAlert() error {
-	_, err = exec.Command("python", "hardware/alert.py").Output()
+// notification can be a buzzer or a light, or something else ...
+func activateNotification() error {
+	_, err = exec.Command("python", "hardware/notification.py").Output()
 	if err != nil {
 		return err
 	}
@@ -19,7 +19,6 @@ func activateAlert() error {
 
 // https://learn.adafruit.com/networked-thermal-printer-using-cups-and-raspberry-pi/overview
 // hacked together from the above tutorial
-
 func printTheChit(braceletNum int, amount, foodItem string) error {
 	file, err := ioutil.TempFile(os.TempDir(), "toPrint")
 	defer os.Remove(file.Name())
