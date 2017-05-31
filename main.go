@@ -425,7 +425,7 @@ func addItemsToASession(w http.ResponseWriter, r *http.Request) {
 							// ignore error
 						}
 						if activeItems.Name != "dontBuzzThisFood" {
-							if err := activateBuzzer(); err != nil {
+							if err := activateNotification(); err != nil {
 								// ignore error
 							}
 						}
