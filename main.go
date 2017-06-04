@@ -425,7 +425,7 @@ func addItemsToASession(w http.ResponseWriter, r *http.Request) {
 							// ignore error
 						}
 						if activeItems.Name != "dontBuzzThisFood" {
-							if err := activateBuzzer(); err != nil {
+							if err := activateNotification(); err != nil {
 								// ignore error
 							}
 						}
@@ -658,10 +658,18 @@ func main() {
 	password := flag.String("password", "", "password for mysql db")
 	flag.Parse()
 
+	if *password == "" {
+		fmt.Println("[NOTICE] No password provided")
+	}
+
+	config := LoadConfig()
+
 	cfg := mysql.Config{
-		User:   "root",
-		DBName: "myBusiness",
+		User:   config.db.user,
+		DBName: config.db.databaseName,
 		Passwd: *password,
+		Net:    config.db.net,
+		Addr:   config.db.getAddr(),
 		Params: map[string]string{
 			"parseTime": "true",
 			"loc":       "EST",
@@ -706,8 +714,8 @@ func main() {
 	// for js
 	http.HandleFunc("/isLockerActive", isLockerActive)
 
-	fmt.Println("POS app started, listening on port 8081")
-	err = http.ListenAndServe(":8081", nil)
+	fmt.Printf("POS app started, listening on port %v\n", config.http.port)
+	err = http.ListenAndServe(fmt.Sprintf(":%v", config.http.port), nil)
 	if err != nil {
 		panic(err.Error())
 	}

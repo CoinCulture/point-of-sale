@@ -9,8 +9,11 @@ machine:
 dependencies:
   override:
     - sudo service mysql start
+    - go get github.com/Masterminds/glide
 
 test:
+  pre: 
+    - cd $REPO && glide install
+    - cd $REPO && go install
   override:
-    - cd $REPO && go build
     - cd $REPO && go test -v
