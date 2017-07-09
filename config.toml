@@ -2,8 +2,8 @@
 #net  = "tcp"        # tcp|sock
 #host = "127.0.0.1"  # not required for net=sock
 #port = 3306
-#name = "myBusiness"
-#user = "root"
+name = "myBusiness"
+user = "root"
 
 [http]
-#port = 8080
+port = 8080
