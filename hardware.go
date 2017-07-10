@@ -36,7 +36,6 @@ func printTheChit(braceletNum int, amount, foodItem string) error {
 
 	_, err = exec.Command("./hardware/printer.sh", file.Name()).Output()
 	if err != nil {
-		fmt.Printf("printer error:\n%v", err)
 		return err
 	}
 

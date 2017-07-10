@@ -36,7 +36,7 @@ if __name__ == '__main__':     # Program start from here
 '''
 
 colors = [0xFF00, 0x00FF, 0x0FF0, 0xF00F]
-pins = (13, 15)  # pins is a dict
+pins = (13, 15)  # these pins were altered from original file so as to be less in the way of the printer pins connection
 
 GPIO.setmode(GPIO.BOARD)       # Numbers GPIOs by physical location
 GPIO.setup(pins, GPIO.OUT)   # Set pins' mode is output

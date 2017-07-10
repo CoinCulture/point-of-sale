@@ -422,11 +422,11 @@ func addItemsToASession(w http.ResponseWriter, r *http.Request) {
 					// same with the buzzer
 					if (activeItems.Name != "noChitNeeded") && (activeItems.Name != "notForTheCook") {
 						if err := printTheChit(braceletID, numberOrdered, activeItems.Name); err != nil {
-							// ignore error
+							fmt.Printf("printer error:\n%v", err)
 						}
 						if activeItems.Name != "dontBuzzThisFood" {
 							if err := activateNotification(); err != nil {
-								// ignore error
+								fmt.Printf("notification error:\n%v", err)
 							}
 						}
 					}
