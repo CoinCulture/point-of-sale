@@ -3,13 +3,27 @@
 Here we cover the installation and configuration of software and hardware from start to finish. We'll assume all the hardware listed in the README has been acquired. The end result is a stand-alone Raspberry Pi (RPi) running the point of sale application as a web server. The RPi is connected to your home (or business) router; this allows any other device to access the application
 
 ## Raspberry Pi (RPi)
-- these instructions apply to the RPi 2 with Raspbian installed. See the [official documentation](https://www.raspberrypi.org/documentation/) for setup information. Your RPi should automatically have access to the internet once connected to a router via a Ethernet cable.
-- without proper configuration, a RPi will be at risk of being hacked. We've found [this tutorial](https://mattwilcox.net/web-development/setting-up-a-secure-home-web-server-with-raspberry-pi) particularly useful for a basic security setup (stop reading at "Install web server software") although a google search for "raspberry pi secure configuration" will go a long way.
+- these instructions apply to the RPi 2 with [Raspbian Jessie](https://www.raspberrypi.org/downloads/raspbian/) installed (NOT Jessie Lite). See the [official documentation](https://www.raspberrypi.org/documentation/) for setup information. Your RPi should automatically have access to the internet once connected to a router via a Ethernet cable.
+- without proper configuration, a RPi will be at risk of being hacked. We've found [this tutorial](https://mattwilcox.net/web-development/setting-up-a-secure-home-web-server-with-raspberry-pi) particularly useful for a basic security setup (stop reading at "Install web server software") although a google search for "raspberry pi secure configuration" will go a long way at introducing the basics.
 - if skipping a secure configuration, you **MUST:** 1) flash your memory card, 2) re-install Raspbian, and 3) start over by securing your RPi **before** running an application that you plan on exposing to the world.
 
 ### Install Go
 - this application is written using the [Go programming language](https://golang.org/). To make edits to the code and to install the program (compile the code into a binary), we need to install Go. Later in the tutorial, you'll see that we're using the Python programming language: it comes pre-installed on the Raspbian operating system.
-- run `sudo apt-get install golang` and you should be good to "go".
+- run these commands:
+```
+wget https://storage.googleapis.com/golang/go1.8.3.linux-armv6l.tar.gz
+tar -C /usr/local -xzf go1.8.3.linux-armv6l.tar.gz
+```
+- then ensure you're in the top level directory, make a goApps directory, and set your GOPATH:
+```
+cd
+mkdir goApps
+echo export PATH=\"\$PATH:/usr/local/go/bin" >> ~/.profile
+echo export GOPATH=\"\$HOME/goApps\" >> ~/.profile
+echo export PATH=\"\$PATH:\$GOPATH/bin\" >> ~/.profile
+```
+- check your go installation with `go version`
+- we'll need `glide` a bit later, so run `go get github.com/Masterminds/glide`
 
 ### Install MySQL
 - while the "logic" (how it operates) of the application is written using Go, we're also going to need a database to store & retrieve information as required by the application. We're using MySQL is the world's most popular open source database. The SQL stands for "Structured Query Language". Within the Go code we connect and "talk to" the MySQL server. It is also possible to talk to the MySQL server via the MySQL command line tool.
@@ -20,9 +34,8 @@ Here we cover the installation and configuration of software and hardware from s
 
 ### Get the source code
 - you'll need the code from this repository to install the application
-- if `git` is not already installed, run `sudo apt-get install git`
-- then run `git clone https://github.com/CoinCulture/point-of-sale.git`, which will "clone" the repository and all of its code to your RPi
-- next, enter the directory in which the repo was cloned: `cd point-of-sale/`
+- run `go get github.com/CoinCulture/point-of-sale`, which will "clone" the repository and all of its code to your RPi, on the `$GOPATH`
+- next, enter the directory: `cd $GOPATH/src/github.com/CoinCulture/point-of-sale`
 - now, we need some dependencies: `glide install`
 - finally, build and run the application: `go build && ./point-of-sale -password yourMYSQLrootPasswordHere`
 - note that the previous command does two things. First, `go build` *compiles the application into a binary*. This has to be done after every edit to the go code. This binary is placed in the current working directory (the folder you are in, try running `ls` to see its files). The `&&` seperates the two commands and runs them in sequence. You could just as easily run `go build`, wait, then run `./point-of-sale -password yourMYSQLrootPasswordHere`. The latter command runs the binary with the `-password` *flag*, which takes the actual password as an *argument*.
