@@ -20,6 +20,7 @@ func activateNotification() error {
 // https://learn.adafruit.com/networked-thermal-printer-using-cups-and-raspberry-pi/overview
 // hacked together from the above tutorial
 func printTheChit(braceletNum int, amount, foodItem string) error {
+
 	file, err := ioutil.TempFile(os.TempDir(), "toPrint")
 	defer os.Remove(file.Name())
 
