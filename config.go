@@ -8,8 +8,9 @@ import (
 )
 
 type Config struct {
-	db   *DbConfig
-	http *HttpConfig
+	db    *DbConfig
+	http  *HttpConfig
+	items *ItemsConfig
 }
 
 type HttpConfig struct {
@@ -22,6 +23,11 @@ type DbConfig struct {
 	port         int
 	databaseName string
 	user         string
+}
+
+type ItemsConfig struct {
+	dontPrint  []string
+	dontNotify []string
 }
 
 func (c DbConfig) getAddr() string {
@@ -58,6 +64,10 @@ func LoadConfig() *Config {
 		},
 		http: &HttpConfig{
 			port: viper.GetInt("http.port"),
+		},
+		items: &ItemsConfig{
+			dontPrint:  viper.GetStringSlice("items.dont_print"),
+			dontNotify: viper.GetStringSlice("items.dont_notify"),
 		},
 	}
 }

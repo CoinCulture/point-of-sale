@@ -8,6 +8,24 @@ import (
 	"strings"
 )
 
+// returns dontPrint and dontNotify as maps
+func handleFoodExceptions() (map[string]bool, map[string]bool) {
+	config := LoadConfig()
+
+	dontPrint := make(map[string]bool)
+	dontNotify := make(map[string]bool)
+
+	for _, x := range config.items.dontPrint {
+		dontPrint[x] = true
+	}
+
+	for _, x := range config.items.dontNotify {
+		dontNotify[x] = true
+	}
+
+	return dontPrint, dontNotify
+}
+
 // notification can be a buzzer or a light, or something else ...
 func activateNotification() error {
 	_, err = exec.Command("python", "hardware/notification.py").Output()

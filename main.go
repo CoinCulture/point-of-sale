@@ -417,17 +417,21 @@ func addItemsToASession(w http.ResponseWriter, r *http.Request) {
 				}
 				// print the food (but not voids)
 				if category == ItemTypes.Food && num0 > 0 {
-					// there's a better way to handle not printing certain foods
-					// this should be set via a config file
-					// same with the buzzer
-					if (activeItems.Name != "noChitNeeded") && (activeItems.Name != "notForTheCook") {
+					dontPrint, dontNotify := handleFoodExceptions()
+
+					fmt.Printf("print: %v", dontPrint)
+					fmt.Printf("not: %v", dontNotify)
+
+					if !dontPrint[activeItems.Name] {
+						
 						if err := printTheChit(braceletID, numberOrdered, activeItems.Name); err != nil {
 							fmt.Printf("printer error:\n%v", err)
 						}
-						if activeItems.Name != "dontBuzzThisFood" {
-							if err := activateNotification(); err != nil {
-								fmt.Printf("notification error:\n%v", err)
-							}
+					}
+
+					if !dontNotify[activeItems.Name] {
+						if err := activateNotification(); err != nil {
+							fmt.Printf("notification error:\n%v", err)
 						}
 					}
 				}
