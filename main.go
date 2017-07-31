@@ -419,9 +419,6 @@ func addItemsToASession(w http.ResponseWriter, r *http.Request) {
 				if category == ItemTypes.Food && num0 > 0 {
 					dontPrint, dontNotify := handleFoodExceptions()
 
-					fmt.Printf("print: %v", dontPrint)
-					fmt.Printf("not: %v", dontNotify)
-
 					if !dontPrint[activeItems.Name] {
 						
 						if err := printTheChit(braceletID, numberOrdered, activeItems.Name); err != nil {
