@@ -133,6 +133,7 @@ var menuTemplate = defaultHTML + menuCSS + `
 
 		Locker Number:<br>
 		<input id='input' type="number" name="bracelet_id" autofocus><div id="active"></div><br>
+		<input type="checkbox" name="quick_add" value="quick_add"> Add Session<br>
 	
 		<div id ="food">
 			<h3>Food:</h3>

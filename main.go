@@ -372,6 +372,17 @@ func addItemsToASession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// if the quick "Add Session" box was checked, an non-existing session
+	// can be initialized on the fly
+	if r.FormValue("quick_add") == "quick_add" {
+		// initialize a visit, generates an invoiceID (duplicate with initliazing a session
+		_, err = db.Exec("INSERT INTO visits(date, bracelet_id, entry_time, active) values (?, ?, ?, ?)", DateString(), braceletID, CurrentTime(), "1")
+		if err != nil {
+			writeError(w, ErrWithSQLquery, err)
+			return
+		}
+	}
+
 	visit, err := getVisitFromBraceletID(braceletID)
 	if err != nil {
 		writeError(w, ErrSessionDoesNotExist, nil)
