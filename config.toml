@@ -7,3 +7,7 @@ user = "root"
 
 [http]
 port = 8080
+
+[items]
+dont_print = [""]
+dont_notify = [""]
