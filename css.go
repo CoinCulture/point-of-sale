@@ -206,7 +206,6 @@ div input h4{
 #button{
 	position:relative;
 	top:-70px;
-	display:none
 }
 
 </style>`
