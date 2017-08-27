@@ -389,6 +389,14 @@ func addItemsToASession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.FormValue("quick_add") == "quick_add" {
+		_, err = db.Exec("INSERT INTO transactions(invoice_id, bracelet_id, name, amount, price, total, time_ordered, notes, type, paid) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", visit.InvoiceID, visit.BraceletID, "quick add", 1, 5, 5, CurrentTime(), "entry", "misc", 1)
+		if err != nil {
+			writeError(w, ErrWithSQLquery, err)
+			return
+		}
+	}
+
 	// [zr] note: this logic may be ~ confusing but deduplicates a ton of code
 	i := 0
 	categories := []string{ItemTypes.Food, ItemTypes.Drink, ItemTypes.Misc}
