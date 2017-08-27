@@ -301,7 +301,7 @@ func initializeSession(w http.ResponseWriter, r *http.Request) {
 		adult = false
 	case EntryTypes.PayAtEnd:
 		paid = 0
-		entryThing = "not_entry"
+		entryThing = "entry"
 		punch = false
 		adult = true
 	case EntryTypes.ItemsOnly:

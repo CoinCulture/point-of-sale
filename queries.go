@@ -16,6 +16,13 @@ func getVisitFromBraceletID(braceletID int) (*Visit, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	rows1 := db.QueryRow("SELECT name FROM transactions WHERE invoice_id=? AND notes=?", visit.InvoiceID, "entry")
+
+	_ = rows1.Scan(&visit.AdmissionType)
+	// if err != nil {
+		// don't fail otherwise this function can break
+	// }
 	return visit, nil
 }
 
