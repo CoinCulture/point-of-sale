@@ -45,12 +45,14 @@ type EntryType struct {
 	Punch     string
 	PayAtEnd  string
 	ItemsOnly string
+	QuickAdd  string
 }
 
 var EntryTypes = EntryType{
 	General:   "general",
 	Punch:     "punch_a_pass",
 	PayAtEnd:  "pay_at_end",
+	QuickAdd:  "quick_add",
 	ItemsOnly: "items_only",
 }
 
