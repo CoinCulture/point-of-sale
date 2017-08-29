@@ -111,9 +111,9 @@ func addItems(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// fill in the struct
-	menu.Foods = getActiveItems("food")
-	menu.Drinks = getActiveItems("drink")
-	menu.Miscs = getActiveItems("misc")
+	menu.Foods = getActiveItems(ItemTypes.Food)
+	menu.Drinks = getActiveItems(ItemTypes.Drink)
+	menu.Miscs = getActiveItems(ItemTypes.Misc)
 
 	renderAndWrite(w, "tMenu", menuTemplate, menu)
 }
@@ -137,7 +137,7 @@ func selectTodaysMenuPage(w http.ResponseWriter, r *http.Request) {
 
 	allFoods := getActiveItems("allfood")
 
-	currentlyActiveFoods := getActiveItems("food")
+	currentlyActiveFoods := getActiveItems(ItemTypes.Food)
 
 	for _, food := range allFoods {
 		for _, activeFood := range currentlyActiveFoods {
@@ -173,7 +173,7 @@ func statisticsPage(w http.ResponseWriter, r *http.Request) {
 
 	stats := new(Statistics)
 
-	stats.Foods = getTransactionsByTypeFinalBill("food")
+	stats.Foods = getTransactionsByTypeFinalBill("ItemTypes.food")
 	stats.Drinks = getTransactionsByTypeFinalBill("drink")
 	stats.Miscs = getTransactionsByTypeFinalBill("misc")
 
@@ -658,7 +658,7 @@ func insertNewItems(w http.ResponseWriter, r *http.Request) {
 	var query string
 	queryString := "INSERT into items (name,price,notes,item_type,active) VALUES ('%s', %v, '%s', '%s', 1)"
 	switch item.Type {
-	case "food", "drink", "misc":
+	case ItemTypes.Food, ItemTypes.Drink, ItemTypes.Misc:
 		query = fmt.Sprintf(queryString, item.Name, item.Price, "todo", item.Type)
 	default:
 		writeError(w, "type of item entered not available; select from: food,drink,misc", nil)

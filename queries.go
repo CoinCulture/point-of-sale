@@ -105,7 +105,7 @@ func getActiveItems(itemType string) []*Item {
 	var queryString = "SELECT name, price FROM items WHERE active=1 AND item_type='%s' ORDER by name"
 
 	switch itemType {
-	case "food", "misc", "drink":
+	case ItemTypes.Food, ItemTypes.Misc, ItemTypes.Drink:
 		query = fmt.Sprintf(queryString, itemType)
 	case "allfood":
 		query = "SELECT name, price FROM items WHERE item_type='food' ORDER by name"
