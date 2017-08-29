@@ -173,9 +173,9 @@ func statisticsPage(w http.ResponseWriter, r *http.Request) {
 
 	stats := new(Statistics)
 
-	stats.Foods = getTransactionsByTypeFinalBill("ItemTypes.Food")
-	stats.Drinks = getTransactionsByTypeFinalBill("drink")
-	stats.Miscs = getTransactionsByTypeFinalBill("misc")
+	stats.Foods = getTransactionsByTypeFinalBill(ItemTypes.Food)
+	stats.Drinks = getTransactionsByTypeFinalBill(ItemTypes.Drink)
+	stats.Miscs = getTransactionsByTypeFinalBill(ItemTypes.Misc)
 
 	stats.TotalFood = calculateDailyTotals(stats.Foods)
 	stats.TotalDrink = calculateDailyTotals(stats.Drinks)
