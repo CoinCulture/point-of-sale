@@ -18,11 +18,11 @@ func stringsToInts(strs []string) ([]int, error) {
 
 func getVisitTotal(visit *Visit, paid int) int {
 
-	visit.FinalBill.Foods = totalItemsFromTransactions(getAllTransactionsFromVisit(visit.BraceletID, visit.InvoiceID, paid, ItemTypes.food))
+	visit.FinalBill.Foods = totalItemsFromTransactions(getAllTransactionsFromVisit(visit.BraceletID, visit.InvoiceID, paid, "ItemTypes.Food"))
 
-	visit.FinalBill.Drinks = totalItemsFromTransactions(getAllTransactionsFromVisit(visit.BraceletID, visit.InvoiceID, paid, ItemTypes.drink))
+	visit.FinalBill.Drinks = totalItemsFromTransactions(getAllTransactionsFromVisit(visit.BraceletID, visit.InvoiceID, paid, "ItemTypes.Drink"))
 
-	visit.FinalBill.Miscs = totalItemsFromTransactions(getAllTransactionsFromVisit(visit.BraceletID, visit.InvoiceID, paid, ItemTypes.misc))
+	visit.FinalBill.Miscs = totalItemsFromTransactions(getAllTransactionsFromVisit(visit.BraceletID, visit.InvoiceID, paid, "ItemTypes.Misc"))
 
 	totalFood := totalFromItems(visit.FinalBill.Foods)
 	totalDrink := totalFromItems(visit.FinalBill.Drinks)

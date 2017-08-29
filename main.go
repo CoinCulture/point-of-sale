@@ -173,7 +173,7 @@ func statisticsPage(w http.ResponseWriter, r *http.Request) {
 
 	stats := new(Statistics)
 
-	stats.Foods = getTransactionsByTypeFinalBill("ItemTypes.food")
+	stats.Foods = getTransactionsByTypeFinalBill("ItemTypes.Food")
 	stats.Drinks = getTransactionsByTypeFinalBill("drink")
 	stats.Miscs = getTransactionsByTypeFinalBill("misc")
 
