@@ -33,11 +33,10 @@ echo export PATH=\"\$PATH:\$GOPATH/bin\" >> ~/.profile
 - with the database in existence, we can then load the sample.sql file: `mysql -u root -p myBusiness < sample.sql`. This file contains MySQL tables (visits, transactions, items) used by the Go application to manage each category. Once the database is loaded, you can edit the rows manually from the `mysql` tool. For your custom application, you'll definitely want to edit the `items` tables to contain the food/drink/miscellaneous items that you plan on selling.
 
 ### Install MySQL Mac OS X
--go to https://dev.mysql.com/downloads/mysql/
--download the DMG archive file
--Run file and follow install prompts to complete the install
+-open terminal and on the command line enter:
+brew install mysql 
 
--Open system preferences
+-when install is complete open system preferences
 -click on the newly installed mysql directory
 -Cick run my SQL server
 Mysql is now up and running.
