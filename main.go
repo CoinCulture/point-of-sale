@@ -354,7 +354,8 @@ func initializeSession(w http.ResponseWriter, r *http.Request) {
 			}
 
 			total := (num0 * activeItems.Price)
-			_, err = db.Exec("INSERT INTO transactions(invoice_id, bracelet_id, name, amount, price, total, time_ordered, notes, type, paid) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", visit.InvoiceID, visit.BraceletID, activeItems.Name, numberOrdered, activeItems.Price, total, CurrentTime(), entryThing, "misc", paid)
+			fmt.Println("Candy")
+			_, err = db.Exec("INSERT INTO transactions(invoice_id, bracelet_id, name, amount, price, total, time_ordered, notes, type, paid) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", visit.InvoiceID, visit.BraceletID, activeItems.Name, numberOrdered, activeItems.Price, total, CurrentTime(), entryThing, "misc", 1)
 			if err != nil {
 				writeError(w, ErrWithSQLquery, err)
 				return
